@@ -11,7 +11,7 @@
     
     <style>
         body {
-            background-color: #f8fafc; /* Slate 50 */
+            background-color: #f8fafc;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
@@ -28,7 +28,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Ajuste do modal para desktop */
         @media (min-width: 640px) {
             .modal-enter {
                 animation: pop-in 0.2s ease-out forwards;
@@ -42,7 +41,6 @@
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Navbar fixa no topo para Desktop e Mobile -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
             <div>
@@ -55,15 +53,10 @@
         </div>
     </header>
 
-    <!-- Container Principal Responsivo -->
     <main class="flex-1 w-full max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-0">
-        
-        <!-- Coluna Esquerda (Destaque) -->
         <div class="lg:col-span-4 lg:sticky lg:top-24 h-fit" id="hero-section">
             <div class="animate-pulse bg-gray-200 h-64 rounded-3xl w-full"></div>
         </div>
-
-        <!-- Coluna Direita (Lista) -->
         <div class="lg:col-span-8 bg-white rounded-3xl shadow-sm border border-gray-100 p-2 sm:p-6" id="list-section">
             <div class="space-y-4 p-4">
                 <div class="animate-pulse bg-gray-100 h-16 rounded-2xl w-full"></div>
@@ -71,10 +64,8 @@
                 <div class="animate-pulse bg-gray-100 h-16 rounded-2xl w-full"></div>
             </div>
         </div>
-
     </main>
 
-    <!-- Modal de Pagamento -->
     <div id="payment-modal" class="fixed inset-0 bg-gray-900/60 z-50 hidden flex items-end sm:items-center justify-center backdrop-blur-sm p-4">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 modal-enter shadow-2xl">
             <div class="flex justify-between items-center mb-6">
@@ -86,7 +77,6 @@
             
             <input type="hidden" id="modal-parcela-id">
             
-            <!-- Resumo do Valor (Apenas Leitura) -->
             <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 mb-6 flex flex-col items-center justify-center">
                 <p class="text-sm font-semibold text-blue-600 mb-1" id="modal-parcela-label">Valor da Parcela</p>
                 <p class="text-3xl font-black text-gray-900" id="modal-display-amount">R$ 0,00</p>
@@ -114,6 +104,7 @@
 
     <script>
         let parcelas = [];
+        // ATUALIZADO: Agora aponta exatamente para "parcelas"
         const API_URL = '/.netlify/functions/parcelas';
 
         const formatMoney = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
@@ -150,7 +141,10 @@
         async function fetchData() {
             try {
                 const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('API indisponível');
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+                }
+                
                 parcelas = await response.json();
                 
                 parcelas = parcelas.map(p => ({
@@ -164,7 +158,9 @@
                 setConnectionStatus('ok');
                 render();
             } catch (error) {
-                console.warn('Usando dados de teste offline:', error);
+                // ISSO AQUI VAI TE AJUDAR A DESCOBRIR O ERRO REAL
+                console.error('MOTIVO DA FALHA NA CONEXÃO:', error);
+                
                 setConnectionStatus('offline');
                 parcelas = [
                     { id: 1, numero: 1, vencimento: '2025-10-31', valor_esperado: 162.55, pago: true, data_pagamento: '2025-10-31', valor_pago: 162.55 },
@@ -309,7 +305,6 @@
                 pago: true, 
                 dataPagamento: date, 
                 valorPago: paidAmount
-                // valorEsperado não é mais enviado daqui
             };
 
             try {
@@ -321,9 +316,12 @@
                 if (response.ok) {
                     await fetchData();
                 } else {
-                    throw new Error("Erro na API");
+                    throw new Error("Erro na API ao salvar.");
                 }
             } catch (error) {
+                console.error('FALHA AO SALVAR NO BANCO:', error);
+                
+                // Fallback visual
                 const index = parcelas.findIndex(p => p.id === id);
                 if (index !== -1) {
                     parcelas[index].pago = true;
