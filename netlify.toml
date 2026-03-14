@@ -1,5 +1,0 @@
-[build]
-  # Diz para o Netlify que o seu site visual está na pasta public
-  publish = "public"
-  # Diz onde estão as suas APIs
-  functions = "netlify/functions"
