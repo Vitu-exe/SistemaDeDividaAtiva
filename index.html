@@ -105,7 +105,7 @@
     <script>
         let parcelas = [];
         // ATUALIZADO: Agora aponta exatamente para "parcelas"
-        const API_URL = '/.netlify/functions/parcelas';
+        const API_URL = '/api/parcelas';
 
         const formatMoney = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
         
